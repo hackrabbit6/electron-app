@@ -24,6 +24,13 @@ function getElectronVersion() {
   return pkg.devDependencies.electron.replace('^', '')
 }
 
+function getProductName() {
+  const pkg = JSON.parse(
+    readFileSync(join(rootDir, 'package.json'), 'utf-8')
+  )
+  return pkg.build?.productName ?? 'app'
+}
+
 function findElectronBuilder() {
   const localPath = join(rootDir, 'node_modules/.bin/electron-builder')
   if (existsSync(localPath)) {
@@ -34,14 +41,19 @@ function findElectronBuilder() {
 
 async function run() {
   const electronVersion = getElectronVersion()
+  const productName = getProductName()
   const buildVersion = getGitSha()
   const isUnsigned = process.argv.includes('--unsigned')
   const builderCmd = findElectronBuilder()
 
-  console.log(`Building TodoList...`)
+  console.log(`Packaging ${productName}`)
   console.log(`Electron version: ${electronVersion}`)
   console.log(`Build version: ${buildVersion}`)
   console.log(`Unsigned: ${isUnsigned}`)
+
+  // Produce dist/ (renderer) and dist-electron/ (main, preload) before packaging.
+  console.log('\nRunning production build…')
+  execSync('pnpm run build', { cwd: rootDir, stdio: 'inherit' })
 
   const args = [
     builderCmd,
@@ -49,10 +61,9 @@ async function run() {
     '--publish', 'never'
   ]
 
-  if (isUnsigned) {
-    args.push('--config', 'mac.identity=null')
-    args.push('--config', 'mac.hardenedRuntime=false')
-  }
+  // Unsigned builds skip signing via CSC_IDENTITY_AUTO_DISCOVERY=false (set in
+  // the env below); the build config's mac.identity:null / hardenedRuntime:false
+  // already disable signing by default. No CLI --config override needed.
 
   const builder = spawn(args[0], args.slice(1), {
     cwd: rootDir,
