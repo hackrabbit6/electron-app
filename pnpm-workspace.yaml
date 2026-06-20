@@ -1,0 +1,21 @@
+packages:
+  - 'apps/*'
+
+# pnpm blocks dependency install scripts by default. These need them: electron
+# downloads its binary in a postinstall; esbuild / electron-winstaller compile
+# native bits. Without this the Electron binary never installs and `pnpm dev`
+# fails its pre-run dependency check.
+#
+# `allowBuilds` is the field this environment's pnpm (11.x) reads;
+# `onlyBuiltDependencies` is the upstream pnpm field. Both are kept for
+# cross-version compatibility. If a fresh clone still reports "Ignored build
+# scripts", run once:  pnpm approve-builds --all
+allowBuilds:
+  electron: true
+  electron-winstaller: true
+  esbuild: true
+
+onlyBuiltDependencies:
+  - electron
+  - electron-winstaller
+  - esbuild

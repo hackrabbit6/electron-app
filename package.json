@@ -1,0 +1,12 @@
+{
+  "name": "electron-app",
+  "private": true,
+  "scripts": {
+    "scaffold": "node apps/desktop/scripts/setup.mjs",
+    "setup": "node apps/desktop/scripts/setup.mjs",
+    "dev": "pnpm --filter desktop dev",
+    "build": "pnpm --filter desktop build",
+    "dist:mac": "pnpm --filter desktop dist:mac",
+    "typecheck": "pnpm --filter desktop typecheck"
+  }
+}
