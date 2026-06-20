@@ -36,7 +36,10 @@ jobs:
         run: pnpm scaffold ${{ matrix.framework }} --no-install
 
       - name: Install framework deps
-        run: pnpm install
+        # scaffold rewrote package.json deps for this framework, so the
+        # committed (react) lockfile won't match — frozen-lockfile (the CI
+        # default) would fail. Let pnpm resolve the framework's deps here.
+        run: pnpm install --no-frozen-lockfile
 
       - name: Type-check
         run: pnpm typecheck
