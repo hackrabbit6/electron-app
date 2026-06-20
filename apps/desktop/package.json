@@ -5,6 +5,7 @@
   "type": "module",
   "description": "A minimal, customizable Electron template",
   "author": "Developer",
+  "license": "MIT",
   "main": "dist-electron/main/index.js",
   "packageManager": "pnpm@11.5.2",
   "engines": {

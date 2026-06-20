@@ -27,7 +27,7 @@ Unsigned local mac package: `pnpm --filter desktop dist:mac -- --unsigned`. Ther
 The key idea: **a fixed Electron core + a swappable renderer**, joined by a scaffolder.
 
 ### Framework-agnostic core (never changes per framework) — `apps/desktop/`
-- **`main/index.ts`** — Electron main process. 900x700 BrowserWindow, loads `VITE_DEV_SERVER_URL` in dev or `dist/index.html` in prod, routes `http`/`window.open` links to the external browser. Locked down: `contextIsolation: true`, `nodeIntegration: false`.
+- **`main/index.ts`** — Electron main process. 900x700 BrowserWindow, loads `VITE_DEV_SERVER_URL` in dev or `dist/index.html` in prod, routes `http`/`window.open` links to the external browser. Locked down: `contextIsolation: true`, `nodeIntegration: false`. Holds a single-instance lock — a second launch focuses the existing window instead of opening another.
 - **`preload/index.ts`** — `contextBridge.exposeInMainWorld('electronAPI', …)`, currently exposing platform + version info. The only sanctioned renderer↔main channel.
 - **`types/electron-api.d.ts`** — shared ambient type for `window.electronAPI`. Update this whenever you add a preload method so every framework variant stays typed.
 - **`scripts/dist-mac.mjs`** — macOS packaging wrapper (reads git SHA as build version, `--unsigned` flag).
@@ -54,4 +54,5 @@ After `pnpm scaffold`, `apps/desktop/` contains the live `index.html`, `vite.con
 - App metadata, the electron-builder `build` block, and base scripts live in `templates/_base.package.json` so they survive a re-scaffold — edit them there, not in the generated `apps/desktop/package.json`.
 - `pnpm-workspace.yaml` approves native install scripts so the Electron binary downloads (pnpm blocks them by default). **This environment's pnpm 11.x reads the `allowBuilds` map; upstream pnpm reads `onlyBuiltDependencies`** — both are kept for cross-version compat. If a fresh clone still reports "Ignored build scripts", run `pnpm approve-builds --all` once. Gotcha: a half-finished electron install can leave `dist/Electron.app` present but `path.txt` missing, which makes `getElectronPath` throw "Electron failed to install correctly" — fix by deleting `node_modules/.pnpm/electron@*/node_modules/electron/{dist,path.txt}` and re-running that package's `install.js`.
 - Node/pnpm versions are pinned via `engines` + `packageManager` in `templates/_base.package.json` (survives a re-scaffold) and `.nvmrc` at the repo root.
+- CI (`.github/workflows/ci.yml`) runs `typecheck` + `build` across all four framework variants on push/PR. It sets `ELECTRON_SKIP_BINARY_DOWNLOAD=1` since the binary isn't needed to typecheck or build (vite externalizes electron). **Untested in actual CI** — written but not yet run on GitHub.
 - Generated/build dirs (`dist/`, `dist-electron/`, `release/`, `node_modules/`) are ignored — don't edit them.

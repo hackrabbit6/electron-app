@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Type-check and build every framework variant. Electron's binary isn't needed
+# for typecheck/build (vite externalizes electron), so we skip its download to
+# keep CI fast.
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [react, vue, svelte, vanilla]
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install Electron core
+        run: pnpm install
+
+      - name: Scaffold ${{ matrix.framework }}
+        run: pnpm scaffold ${{ matrix.framework }} --no-install
+
+      - name: Install framework deps
+        run: pnpm install
+
+      - name: Type-check
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
