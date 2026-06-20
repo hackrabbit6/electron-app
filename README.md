@@ -47,6 +47,8 @@ Supported: `react`, `vue`, `svelte`, `vanilla`.
 
 For an **unsigned** local macOS package: `pnpm --filter desktop dist:mac -- --unsigned`.
 
+> First packaging needs network access: electron-builder downloads the Electron archive and the `dmgbuild` tool into `~/Library/Caches/electron/`. On a restricted network the `.dmg` step can fail (`EOF`/`ECONNRESET`) while the `.zip` still succeeds. Cached tools make later builds work offline.
+
 ## Project layout
 
 ```
