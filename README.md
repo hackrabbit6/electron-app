@@ -1,5 +1,7 @@
 # Electron Template
 
+[![CI](https://github.com/hackrabbit6/electron-app/actions/workflows/ci.yml/badge.svg)](https://github.com/hackrabbit6/electron-app/actions/workflows/ci.yml)
+
 A minimal, customizable Electron desktop template with a **framework-agnostic core** and a **pick-your-frontend scaffolder**. Choose React, Vue, Svelte, or Vanilla TS — the Electron main/preload layer stays the same.
 
 > 📖 中文使用指南见 [docs/使用指南.md](docs/使用指南.md)。
